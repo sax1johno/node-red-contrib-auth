@@ -1,9 +1,9 @@
 <!-- First, the content of the edit dialog is defined.                       -->
 
-<script type="text/x-red" data-template-name="seneca">
+<script type="text/x-red" data-template-name="httpAuth">
     <div class="form-row">
-        <label for="node-input-connection"><i class="fa fa-tag"></i> Connection Object</label>
-        <input type="text" id="node-input-connection" placeholder="">
+        <label for="node-input-strategy"><i class="fa fa-tag"></i> Authentication Strategy</label>
+        <input type="text" id="node-input-strategy" placeholder="">
     </div>    
     <div class="form-row">
         <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
@@ -12,21 +12,18 @@
 </script>
 
 
-<script type="text/x-red" data-help-name="seneca">
-   <p>Node for connecting to seneca.js microservices.</p>
-   <p>Input is a JSON object on `msg.payload` containing the command pattern you
-   wish to send to seneca</p>
-   <p>Outputs an object called <code>msg</code> containing
-   <code>msg.payload</code>. msg.payload is a String with the results returned
-   from the seneca service.</p>
+<script type="text/x-red" data-help-name="httpAuth">
+   <p>Node for securing http nodes using passport.js.<p>
+   <p>Passes through all input if an authentication session exists.</p>
+   <p>Strategy is any authentication strategy supported by passport.js"
 </script>
 
 <script type="text/javascript">
-    RED.nodes.registerType('seneca',{
+    RED.nodes.registerType('httpAuth',{
         category: 'function',      // the palette category
         defaults: {             // defines the editable properties of the node
             name: {value:"", required: true},   //  along with default values.
-            connection: {value: "",type: "seneca_config", required: true}
+            connection: {value: "",type: "auth_config", required: true}
         },
         color: "#3f33ff",
         inputs:1,               // set the number of inputs - only 0 or 1
@@ -34,7 +31,7 @@
         // set the icon (held in icons dir below where you save the node)
         icon: "myicon.png",     // saved in  icons/myicon.png
         label: function() {     // sets the default label contents
-            return this.name||"seneca";
+            return this.name||"auth";
         },
         labelStyle: function() { // sets the class to apply to the label
             return this.name?"node_label_italic":"";
@@ -45,22 +42,30 @@
 
 <!-- Seneca config node -->
 <script type="text/javascript">
-    RED.nodes.registerType('seneca_config',{
+    RED.nodes.registerType('auth_config',{
         category: 'config',
         defaults: {
             name: {value: ""},
-            connection: {value:"",required:true},
+            strategy: {value:"",required:true},
         },
         label: function() {
-            return this.name || this.connection;
+            return this.name || this.strategy;
         }
     });
 </script>
 
-<script type="text/x-red" data-template-name="seneca_config">
+<script type="text/x-red" data-template-name="auth_config">
     <div class="form-row">
-        <label for="node-config-input-connection"><i class="icon-bookmark"></i> Connection Object</label>
-        <input type="text" id="node-config-input-connection">
+        <label for="node-config-input-strategy"><i class="icon-bookmark"></i> Strategy</label>
+        <input type="text" id="node-config-input-strategy">
+    </div>
+    <div class="form-row">
+        <label for="node-config-input-strategyconfig"><i class="icon-bookmark"></i> Strategy Configuration</label>
+        <input type="text" id="node-config-input-strategyconfig">
+    </div>
+    <div class="form-row">
+        <label for="node-config-input-middlewareconfig"><i class="icon-bookmark"></i> Auth Middleware Config</label>
+        <input type="text" id="node-config-input-middlewareconfig">
     </div>
     <div class="form-row">
         <label for="node-config-input-name"><i class="icon-bookmark"></i> Name</label>

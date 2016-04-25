@@ -9,88 +9,143 @@ module.exports = function(RED) {
     // require any external libraries we may need....
     //var foo = require("foo-library");
     // Statics go here.
-    var seneca = require('seneca');
+    var passport = require('passport');
+    var cookieParser = require('cookie-parser');
+    var expressSession = require('express-session');
+    
+    passport.serializeUser(function(user, done) {
+        // done has an error as the first param, and the user string as the second.
+        done(null, JSON.stringify(user));
+    });
+    
+    passport.deserializeUser(function(user, done) {
+        var u = JSON.parse(user);
+        done(null, u);
+    });
     
     // The main node definition - most things happen in here
-    function SenecaNode(config) {
+    function HttpAuthNode(config) {
         // Create a RED node
         RED.nodes.createNode(this,config);
 
         // copy "this" object in case we need it in context of callbacks of other functions.
         var node = this;
 
-        this.status({fill:"red",shape:"ring",text:"disconnected"});
+        // this.status({fill:"red",shape:"ring",text:"disconnected"});
 
         // Store local copies of the node configuration (as defined in the .html)
         // this.topic = config.topic;
         // Retrieve the config node
-        this.connection = RED.nodes.getNode(config.connection);
-        if (this.connection) {
-            try {
-                // Create the seneca instance here and then attach a client.
-                this.connectionObject = this.connection.connection;
-                this.connectionObject = JSON.parse(this.connectionObject);
-                console.error("connection is ", this.connectionObject);
-                console.error("type of connectionObject is ", typeof(this.connectionObject));
-                this.senecaInstance = seneca();
-                this.client = this.senecaInstance.client(this.connectionObject);
-                this.senecaInstance.ready(function() {
+        if (RED.settings.httpNodeRoot !== false) {
+            this.strategy = RED.nodes.getNode(config.strategy);
+            if (this.strategy) {
+                try {
+                    // Create the seneca instance here and then attach a client.
+                    this.strategyName = this.strategy.strategy;
+                    this.strategyConfig = this.strategy.strategyconfig;
+                    this.middlewareConfig = this.strategy.middlewareconfig;
+                    
+                    // Take the strategyconfig and configure the passport method
+                    var strategyLibrary = "passport-" + this.strategyName;
+                    var Strategy = require(strategyLibrary).Strategy;
+    
+                    // Yes, I'm aware eval is evil.  In this case, we're trusting the user as
+                    // they are most likely the programmer and already have teh powerz.
+                    var strategyConfigFn = eval(this.strategyConfig);
+                    if (this.middlewareConfig) {
+                        var middlewareConfigFn = eval(this.middlewareConfig);
+                    } else {
+                        var middlewareConfigfn = function(req, res, next){ 
+                            next();
+                        }
+                    }
+                    
+                    passport.use(new Strategy(strategyConfigFn()));
+                    
+                    var app = RED.httpNode;
+                    app.use(cookieParser());
+                    app.use(expressSession({ "secret": "keyboard cat"}));
+                    app.use(passport.initialize());
+                    app.use(passport.session());
+                    
                     node.on('input', function (msg) {
-                        // msg.payload contains the command object.
-                        // in this example just send it straight on... should process it here really
-                        this.status({fill:"blue",shape:"dot",text:"processing"});
-                        console.error("connection type = ", this.connectionObject);
-                        this.client.act(msg.payload, function(err, result) {
+                        passport.authenticate(this.strategyName, middlewareConfigFn, function(err, user, info) {
                             if (err) {
                                 node.error(err);
-                                node.status({fill:"green",shape:"dot",text:"connected"});
-                                node.send(err);
-                            } else {
-                                msg.payload.result = result;
+                                msg.authErr = err;
                                 node.send(msg);
-                                node.status({fill:"green",shape:"dot",text:"connected"});
                             }
-                        });
+                            else if (!user) {
+                                node.warn("User not found");
+                                msg.authErr = "not-found";
+                                node.send(msg);
+                            } else {
+                                msg.req.login(user, function(err) {
+                                    if (err) {
+                                        node.error(err);
+                                        msg.authErr = err;
+                                        node.send(msg);
+                                    } else {
+                                        // Just send the message over since the user is contained in the request
+                                        // on the message.
+                                        node.send(msg);
+                                    }
+                                });
+                            }
+                        })(msg.req, msg.res);
+                        // msg.payload contains the command object.
+                        // in this example just send it straight on... should process it here really
+                        
+                        // this.client.act(msg.payload, function(err, result) {
+                        //     if (err) {
+                        //         node.error(err);
+                        //         node.status({fill:"green",shape:"dot",text:"connected"});
+                        //         node.send(err);
+                        //     } else {
+                        //         msg.payload.result = result;
+                        //         node.send(msg);
+                        //         node.status({fill:"green",shape:"dot",text:"connected"});
+                        //     }
+                        // });
                     });
             
-                    node.on("close", function() {
+                    // node.on("close", function() {
                         // Called when the node is shutdown - eg on redeploy.
                         // Allows ports to be closed, connections dropped etc.
                         // eg: node.client.disconnect();
-                        this.senecaInstance.close(function(err) {
-                            node.error(err); 
-                        });                    
-                    });
-                    
-                    // node.on("node-status", function() {
-                    // })
-    
-                    node.status({fill:"green",shape:"dot",text:"connected"});
-                });
-            } catch (e) {
-                node.error(["Exception in seneca node", e].join(' '));
-                console.error(e);
-                this.status({file: "red", shape: "dot", text: "ERR: see debug panel"});
+                    // });
+                        
+                        // node.on("node-status", function() {
+                        // })
+        
+                        // node.status({fill:"green",shape:"dot",text:"connected"});
+                } catch (e) {
+                    node.error(["Exception in authorization node", e].join(' '));
+                    console.error(e);
+                    // this.status({file: "red", shape: "dot", text: "ERR: see debug panel"});
+                }
+            } else {
+                // this.status({fill:"red",shape:"dot",text:"ERR: No Config Found"});
+                node.warn("An HTTP Root node is required.");
             }
-        } else {
-            this.status({fill:"red",shape:"dot",text:"ERR: No Config Found"});
         }
-
     }
 
     // Register the node by name. This must be called before overriding any of the
     // Node functions.
-    RED.nodes.registerType("seneca",SenecaNode);
+    RED.nodes.registerType("httpAuth",HttpAuthNode);
     
     
     // Register the configuration node
-    function SenecaConfigNode(n) {
+    function httpAuthConfig(n) {
         RED.nodes.createNode(this,n);
-        this.connection = n.connection;
+        this.strategy = n.strategy;
+        this.strategyConfig = n.strategyConfig;
+        this.middlwareConfig = n.middlewareConfig;
         this.name = n.name;
         // console.error("Config in confignode is ", n);
     }
-    RED.nodes.registerType("seneca_config",SenecaConfigNode);
+    RED.nodes.registerType("auth_config",httpAuthConfig);
 
 
 };

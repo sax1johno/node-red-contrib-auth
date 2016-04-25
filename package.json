@@ -1,17 +1,17 @@
 {
-  "name": "node-red-contrib-seneca",
+  "name": "node-red-contrib-auth",
   "version": "0.1.3",
-  "description": "A node-red node for connecting to microservices written in seneca.js.",
+  "description": "A node-red node for authenticating http routes using passport.js.",
   "keywords": [
     "node-red",
-    "senecajs",
-    "seneca",
+    "passport",
+    "authentication",
     "flow",
-    "microservice"
+    "authorization"
   ],
   "node-red": {
     "nodes": {
-      "seneca": "seneca.js"
+      "http-auth": "httpAuth.js"
     }
   },
   "author": {
@@ -20,14 +20,9 @@
   },
   "license": "MIT",
   "dependencies": {
+    "cookie-parser": "^1.4.1",
+    "express-session": "^1.13.0",
     "node-red": "^0.13.3",
-    "seneca": "^1.4.0"
-  },
-  "readme": "# Node-Red Node for SenecaJS\n\nThis library connects [node-red](http://www.nodered.org) to [senecajs](http://www.senecajs.org) microservices by providing a seneca client node.  Command patterns are sent via the message payload so they can be injected using the standard `inject` node or via other input nodes.  Command patterns sent to the payload must be properly formed JSON objects.\n\n### Version\n0.1.0\n\n### Installation\n\n```sh\n$ npm install node-red-contrib-seneca\n```\nnode-red should automatically detect the new node upon restarting of the server.\n\nLicense\n----\n\nMIT\n\nCopyright\n----\n\n&copy; 2016 John O'Connor",
-  "readmeFilename": "Readme.md",
-  "gitHead": "3e56972942a9edfa2e42e4317a1add69b1d67d04",
-  "_id": "node-red-contrib-seneca@0.1.3",
-  "scripts": {},
-  "_shasum": "d3822976bdfc3f3481d3cf40dfcf5c88b1e6d3bb",
-  "_from": "node-red-contrib-seneca@>=0.1.1 <0.2.0"
+    "passport": "^0.3.2"
+  }
 }
