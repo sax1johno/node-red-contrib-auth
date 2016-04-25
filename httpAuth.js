@@ -69,20 +69,28 @@ module.exports = function(RED) {
                     node.on('input', function (msg) {
                         passport.authenticate(this.strategyName, middlewareConfigFn, function(err, user, info) {
                             if (err) {
-                                console.log("in error of authenticate");
                                 node.error(err);
-                                msg.authErr = err;
+                                msg.error = {
+                                    message: "Authentication Error: " + e,
+                                    code: "general"
+                                }
                                 node.send(msg);
                             }
                             else if (!user) {
                                 node.warn("User not found");
-                                msg.authErr = "not-found";
+                                msg.error = {
+                                    message: "Authentication failed: user not found",
+                                    code: "user-not-found"
+                                }
                                 node.send(msg);
                             } else {
                                 msg.req.login(user, function(err) {
                                     if (err) {
                                         node.error(err);
-                                        msg.authErr = err;
+                                        msg.error = {
+                                            message: "Unable to log in user: " + err,
+                                            code: "invalid-credentials"
+                                        }
                                         node.send(msg);
                                     } else {
                                         // Just send the message over since the user is contained in the request

@@ -15,7 +15,22 @@
 <script type="text/x-red" data-help-name="httpAuth">
    <p>Node for securing http nodes using passport.js.<p>
    <p>Passes through all input if an authentication session exists.</p>
-   <p>Strategy is any authentication strategy supported by passport.js"
+   <p>Strategy is any authentication strategy supported by passport.js"</p>
+   <p>NOTE: This node does not redirect but instead returns an error object on the message indicating any authentication failures.
+    The authentication object has the following format:</p>
+    <code>{
+        error: {
+           code: ("user-not-found"|"invalid-credentials"|"general"),
+           message: "An error message containing more details."
+        }
+    }
+    </code>
+    <p>Additional redirects and other authentication-related needs are handled by other nodes.</p>
+    
+    <h3>Configuration</h3>
+    <p>To use this node, developers need to choose an authentication strategy and configure that strategy.
+    A strategy is any of the strategies supported by passport.  The "strategy config" field is the code
+    that would be passed into that strategy's constructor function.</p>
 </script>
 
 <script type="text/javascript">
