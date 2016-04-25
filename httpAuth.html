@@ -23,9 +23,9 @@
         category: 'function',      // the palette category
         defaults: {             // defines the editable properties of the node
             name: {value:"", required: true},   //  along with default values.
-            connection: {value: "",type: "auth_config", required: true}
+            strategy: {value: "",type: "auth_config", required: true}
         },
-        color: "#3f33ff",
+        color: "#F619B4",
         inputs:1,               // set the number of inputs - only 0 or 1
         outputs:1,              // set the number of outputs - 0 to n
         // set the icon (held in icons dir below where you save the node)
@@ -40,13 +40,14 @@
 </script>
 
 
-<!-- Seneca config node -->
 <script type="text/javascript">
     RED.nodes.registerType('auth_config',{
         category: 'config',
         defaults: {
             name: {value: ""},
             strategy: {value:"",required:true},
+            strategyConfig: {value: ""},
+            middlewareConfig: {value: ""}
         },
         label: function() {
             return this.name || this.strategy;
@@ -60,12 +61,12 @@
         <input type="text" id="node-config-input-strategy">
     </div>
     <div class="form-row">
-        <label for="node-config-input-strategyconfig"><i class="icon-bookmark"></i> Strategy Configuration</label>
-        <input type="text" id="node-config-input-strategyconfig">
+        <label for="node-config-input-strategyConfig"><i class="icon-bookmark"></i> Strategy Configuration</label>
+        <input type="text" id="node-config-input-strategyConfig">
     </div>
     <div class="form-row">
-        <label for="node-config-input-middlewareconfig"><i class="icon-bookmark"></i> Auth Middleware Config</label>
-        <input type="text" id="node-config-input-middlewareconfig">
+        <label for="node-config-input-middlewareConfig"><i class="icon-bookmark"></i> Auth Middleware Config</label>
+        <input type="text" id="node-config-input-middlewareConfig">
     </div>
     <div class="form-row">
         <label for="node-config-input-name"><i class="icon-bookmark"></i> Name</label>

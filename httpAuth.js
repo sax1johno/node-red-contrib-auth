@@ -42,7 +42,7 @@ module.exports = function(RED) {
                 try {
                     // Create the seneca instance here and then attach a client.
                     this.strategyName = this.strategy.strategy;
-                    this.strategyConfig = this.strategy.strategyconfig;
+                    this.strategyConfig = this.strategy.strategyConfig;
                     this.middlewareConfig = this.strategy.middlewareconfig;
                     
                     // Take the strategyconfig and configure the passport method
@@ -51,16 +51,14 @@ module.exports = function(RED) {
     
                     // Yes, I'm aware eval is evil.  In this case, we're trusting the user as
                     // they are most likely the programmer and already have teh powerz.
-                    var strategyConfigFn = eval(this.strategyConfig);
+                    var middlewareConfigFn;
                     if (this.middlewareConfig) {
-                        var middlewareConfigFn = eval(this.middlewareConfig);
-                    } else {
-                        var middlewareConfigfn = function(req, res, next){ 
-                            next();
-                        }
+                        eval("middlewareConfigFn = " + this.middlewareConfig);
                     }
                     
-                    passport.use(new Strategy(strategyConfigFn()));
+                    var passportString ="passport.use(new Strategy(" + this.strategyConfig + "));";
+                    // console.log(passportString);
+                    eval(passportString);
                     
                     var app = RED.httpNode;
                     app.use(cookieParser());
@@ -71,6 +69,7 @@ module.exports = function(RED) {
                     node.on('input', function (msg) {
                         passport.authenticate(this.strategyName, middlewareConfigFn, function(err, user, info) {
                             if (err) {
+                                console.log("in error of authenticate");
                                 node.error(err);
                                 msg.authErr = err;
                                 node.send(msg);
@@ -120,7 +119,7 @@ module.exports = function(RED) {
         
                         // node.status({fill:"green",shape:"dot",text:"connected"});
                 } catch (e) {
-                    node.error(["Exception in authorization node", e].join(' '));
+                    node.error(["Exception in authorization node", e, e.stack].join(' '));
                     console.error(e);
                     // this.status({file: "red", shape: "dot", text: "ERR: see debug panel"});
                 }
