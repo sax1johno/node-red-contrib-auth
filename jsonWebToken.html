@@ -1,6 +1,6 @@
 <!-- First, the content of the edit dialog is defined.                       -->
 
-<script type="text/x-red" data-template-name="httpAuth">
+<script type="text/x-red" data-template-name="JsonWebToken">
     <div class="form-row">
         <label for="node-input-config"><i class="fa fa-tag"></i> Token Configuration</label>
         <input type="text" id="node-input-strategy" placeholder="">
@@ -11,7 +11,7 @@
     </div>
 </script>
 
-<script type="text/x-red" data-help-name="httpAuth">
+<script type="text/x-red" data-help-name="JsonWebToken">
    <p>Node for securing http nodes using json web token.<p>
    <p>When a <code>msg.payload</code> value is present, this node will encode the message payload into JSON web token using the jsonwebtoken package and outputs
    the original payload on the <code>msg.payload</code> and the token on <code>msg.token</code></p>
@@ -34,7 +34,7 @@
 </script>
 
 <script type="text/javascript">
-    RED.nodes.registerType('httpAuth',{
+    RED.nodes.registerType('JsonWebToken',{
         category: 'function',      // the palette category
         defaults: {             // defines the editable properties of the node
             name: {value:"", required: true},   //  along with default values.
@@ -46,7 +46,7 @@
         // set the icon (held in icons dir below where you save the node)
         icon: "myicon.png",     // saved in  icons/myicon.png
         label: function() {     // sets the default label contents
-            return this.name||"auth";
+            return this.name;
         },
         labelStyle: function() { // sets the class to apply to the label
             return this.name?"node_label_italic":"";
@@ -67,7 +67,7 @@
     });
 </script>
 
-<script type="text/x-red" data-template-name="auth_config">
+<script type="text/x-red" data-template-name="token_config">
     <div class="form-row">
         <label for="node-config-input-secret"><i class="icon-bookmark"></i> Secret</label>
         <input type="text" id="node-config-input-secret">

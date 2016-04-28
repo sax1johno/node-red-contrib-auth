@@ -27,7 +27,25 @@ module.exports = function(RED) {
                 node.on('input', function(msg) {
                         // var sesh = 
                         try {
-                            
+                            // If there's no token present, encode the payload and add a token.
+                            if (!msg.token) {
+                                var token = jwt.sign(msg.payload, node.secret);
+                                msg.token = token;
+                                node.send(msg);
+                            } else {
+                                // otherwise, decode the token in msg.token and place it in the payload.
+                                jwt.verify(msg.token, node.secret, function(err, decoded) {
+                                  if (!err) {
+                                      msg.payload = decoded;
+                                      node.send(msg);
+                                  } else {
+                                      node.error(err);
+                                      msg.error = err;
+                                      node.send(msg);
+                                  }
+                                });
+                                
+                            }
                         } catch (e) {
                             node.error("error" + e);
                             console.log("Error", e.stack);
