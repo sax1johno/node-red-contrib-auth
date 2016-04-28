@@ -20,6 +20,7 @@
   },
   "license": "MIT",
   "dependencies": {
+    "client-sessions": "^0.7.0",
     "cookie-parser": "^1.4.1",
     "express-session": "^1.13.0",
     "node-red": "^0.13.3",
