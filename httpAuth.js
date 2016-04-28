@@ -9,8 +9,7 @@ module.exports = function(RED) {
         //var foo = require("foo-library");
         // Statics go here.
         var passport = require('passport');
-        var cookieParser = require('cookie-parser');
-        var session = require('client-sessions');
+        // var session = require('client-sessions');
 
         // The main node definition - most things happen in here
         function HttpAuthNode(config) {
@@ -30,8 +29,6 @@ module.exports = function(RED) {
                 if (node.strategy) {
                     try {
                         // Create the seneca instance here and then attach a client.
-                        node.strategyName = node.strategy.strategy;
-                        node.strategyConfig = node.strategy.strategyConfig;
                         node.middlewareConfig = node.strategy.middlewareconfig;
                         node.sessionConfig = node.strategy.sessionConfig || {
                             cookieName: 'session',
@@ -40,10 +37,10 @@ module.exports = function(RED) {
                             activeDuration: 5 * 60 * 1000,
                         };
 
-                        // Take the strategyconfig and configure the passport method
-                        var strategyLibrary = "passport-" + node.strategyName;
-                        var Strategy = require(strategyLibrary).Strategy;
-
+                        var passportString = "passport.use(new Strategy(" + node.strategyConfig + "));";
+                        console.log(passportString);
+                        eval(passportString);
+                        
                         // Yes, I'm aware eval is evil.  In this case, we're trusting the user as
                         // they are most likely the programmer and already have teh powerz.
                         var middlewareConfigFn;
@@ -55,75 +52,67 @@ module.exports = function(RED) {
                         // RED.httpNode.use(passport.initialize());
                         // RED.httpNode.use(passport.session());
 
-                        var passportString = "passport.use(new Strategy(" + node.strategyConfig + "));";
-                        console.log(passportString);
-                        eval(passportString);
-
-                        passport.serializeUser(function(user, done) {
-                            // done has an error as the first param, and the user string as the second.
-                            done(null, JSON.stringify(user));
-                        });
-
-                        passport.deserializeUser(function(user, done) {
-                            var u = JSON.parse(user);
-                            done(null, u);
-                        });
-
                         node.on('input', function(msg) {
                                 // var sesh = 
-                                session(node.sessionConfig)(msg.req, msg.res, function(err) {
-                                    console.log("in session");
-                                    passport.initialize()(msg.req, msg.res, function(err) {
-                                        console.log("in initialize");
-                                        passport.session()(msg.req, msg.res, function(err) {
-                                            console.log("Inside of passport.session");
-                                            passport.authenticate(node.strategyName, {
-                                                passReqToCallback: true,
-                                                failWithError: true
-                                            }, function(err, user, info) {
-                                                console.log("Made it into authenticate");
-                                                // console.log("error is ", err);
-                                                console.log("user is ", user);
-                                                // console.log(req.user);
+                                try {
+                                    console.log("******* user in beginning is = ", msg.req.user);
+                                    console.log("****** session = ", msg.req.session);
+                                    passport.authenticate(node.strategyName, {
+                                        passReqToCallback: true,
+                                        failWithError: true
+                                    }, function(err, user, info) {
+                                        console.log("Made it into authenticate");
+                                        // // console.log("error is ", err);
+                                        // console.log("user is ", user);
+                                        // console.log("Url = ", msg.req.originalUrl);
+                                        // console.log(req.user);
+                                        // msg.req.session.user = user;
+                                        console.log("user = ", user);
+                                        console.log("info = ", info);
+                                        if (err) {
+                                            console.log("Error = ", err);
+                                            console.log("Stack = ", err.stack);
+                                            node.error(err);
+                                            msg.error = {
+                                                message: err,
+                                                code: "general"
+                                            }
+                                            node.send(msg);
+                                        }
+                                        else if (!user) {
+                                            console.log("user not found");
+                                            node.error("User not found");
+                                            msg.error = {
+                                                message: "User Not Found",
+                                                code: "user-not-found"
+                                            }
+                                            node.send(msg);
+                                        }
+                                        else {
+                                            console.log("Reached the login point");
+                                            // console.log("req is ", require('util').inspect(1));
+                                            msg.req.logIn(user, function(err) {
+                                                // console.log("Inside of session, user is ", msg.req.user);
+                                                // console.log("Called msg.req.login");
                                                 if (err) {
-                                                    node.error(err);
+                                                    console.log("error is ", err);
                                                     msg.error = {
                                                         message: err,
-                                                        code: "general"
-                                                    }
-                                                    node.send(msg);
-                                                }
-                                                else if (!user) {
-                                                    node.error("User not found");
-                                                    msg.error = {
-                                                        message: "User Not Found",
-                                                        code: "user-not-found"
+                                                        code: "login-error"
                                                     }
                                                     node.send(msg);
                                                 }
                                                 else {
-                                                    console.log("Reached the login point");
-                                                    // console.log("req is ", require('util').inspect(1));
-                                                    msg.req.logIn(user, function(err) {
-                                                        console.log("Called msg.req.login");
-                                                        if (err) {
-                                                            console.log("error is ", err);
-                                                            msg.error = {
-                                                                message: err,
-                                                                code: "login-error"
-                                                            }
-                                                            node.send(msg);
-                                                        }
-                                                        else {
-                                                            console.log("User logged in");
-                                                            node.send(msg);
-                                                        }
-                                                    });
+                                                    // console.log("User logged in", msg.req.user);
+                                                    node.send(msg);
                                                 }
-                                            })(msg.req, msg.res);
-                                        });
-                                    });
-                                });
+                                            });
+                                        }
+                                    })(msg.req, msg.res);
+                                } catch (e) {
+                                    node.error("error" + e);
+                                    console.log("Error", e.stack);
+                                }
                                 // passport.authenticate(this.strategyName, { failWithError: true })(msg.req, msg.res, function(req, res) {
                                 //     console.log("Hello from the out-siiiiiiiide!!!!! ");
                                 //     console.log("Request is ", req);
