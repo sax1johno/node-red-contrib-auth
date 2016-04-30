@@ -4,14 +4,15 @@
   "description": "A node-red node for authenticating http routes using passport.js.",
   "keywords": [
     "node-red",
-    "passport",
+    "json web token",
+    "jwt",
     "authentication",
     "flow",
     "authorization"
   ],
   "node-red": {
     "nodes": {
-      "http-auth": "httpAuth.js"
+      "JsonWebToken": "jsonWebToken.js"
     }
   },
   "author": {

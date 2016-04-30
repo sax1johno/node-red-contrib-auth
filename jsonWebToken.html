@@ -2,8 +2,8 @@
 
 <script type="text/x-red" data-template-name="JsonWebToken">
     <div class="form-row">
-        <label for="node-input-config"><i class="fa fa-tag"></i> Token Configuration</label>
-        <input type="text" id="node-input-strategy" placeholder="">
+        <label for="node-input-tokenconfig"><i class="fa fa-tag"></i> Token Configuration</label>
+        <input type="text" id="node-input-tokenconfig" placeholder="">
     </div>    
     <div class="form-row">
         <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
@@ -38,7 +38,7 @@
         category: 'function',      // the palette category
         defaults: {             // defines the editable properties of the node
             name: {value:"", required: true},   //  along with default values.
-            strategy: {value: "",type: "token_config", required: true}
+            tokenconfig: {value: "",type: "JsonWebToken_config", required: true}
         },
         color: "#F619B4",
         inputs:1,               // set the number of inputs - only 0 or 1
@@ -55,7 +55,7 @@
 </script>
 
 <script type="text/javascript">
-    RED.nodes.registerType('token_config',{
+    RED.nodes.registerType('JsonWebToken_config',{
         category: 'config',
         defaults: {
             name: {value: ""},
@@ -67,7 +67,11 @@
     });
 </script>
 
-<script type="text/x-red" data-template-name="token_config">
+<script type="text/x-red" data-template-name="JsonWebToken_config">
+    <div class="form-row">
+        <label for="node-config-input-name"><i class="icon-bookmark"></i> Name</label>
+        <input type="text" id="node-config-input-name">
+    </div>
     <div class="form-row">
         <label for="node-config-input-secret"><i class="icon-bookmark"></i> Secret</label>
         <input type="text" id="node-config-input-secret">
