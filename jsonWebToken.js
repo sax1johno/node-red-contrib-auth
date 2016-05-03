@@ -45,10 +45,10 @@ module.exports = function(RED) {
                         node.send(msg);
                     }
                     else {
-                        // otherwise, decode the token in msg.token and place it in the payload.
+                        // otherwise, decode the token in msg.token and place the data in the msg.token.
                         jwt.verify(msg.token, node.secret, function(err, decoded) {
                             if (!err) {
-                                msg.payload = decoded;
+                                msg.token = decoded;
                                 node.send(msg);
                             }
                             else {

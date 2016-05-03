@@ -16,7 +16,7 @@
    <p>When a <code>msg.payload</code> value is present, this node will encode the message payload into JSON web token using the jsonwebtoken package and outputs
    the original payload on the <code>msg.payload</code> and the token on <code>msg.token</code></p>
    <p>When a <code>msg.token</code> value is present, this node will decode the json web token using the configured key and outputs
-   the value of the token into the <code>msg.payload</code></p>
+   the value of the token back into the <code>msg.token</code></p>
     <h3>Configuration</h3>
     <p>The session secret / key can be set by adding <code>msg.secret</code> or by configuring the node with a 
     secret in the configuration node.</p>
