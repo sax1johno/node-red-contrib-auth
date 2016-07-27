@@ -1,7 +1,7 @@
 {
   "name": "node-red-contrib-auth",
   "version": "0.1.4",
-  "description": "A node-red node for authenticating http routes using passport.js.",
+  "description": "A node-red node for authentication using JSONWebToken.  Use this node to store and retrieve secure tokens from a message.",
   "keywords": [
     "node-red",
     "json web token",

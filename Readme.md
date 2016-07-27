@@ -1,9 +1,11 @@
 # Node-Red Auth Node
 
-This library uses the passport.js library to secure http nodes using JsonWebToken.
+This library reads and writes secure JSONWebTokens.  These tokens can be used to securely store client-side tokens for user authentication and authorization.
+
+This node does not perform authentication itself and can be used with any message node (ie: http, tcp, websocket, etc).
 
 ### Version
-0.1.0
+0.1.6
 
 ### Installation
 
